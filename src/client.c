@@ -8,14 +8,36 @@ int handle_client(SOCKET client_socket){
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
 
 
-    char *message = "Hello from client!";
+    const int SIZE = 500;
+    char message[SIZE];//Сообщение от клиента
+    char buffer[SIZE];//Получение сообщения от сервера
+    int bytes_received;//Размер сообщения полученого от сервера
+    
+    printf("Enter message: ");
+    fflush(stdout);
+    
+    // Очищаем буфер ввода перед чтением
+    while (getchar() != '\n');
+    
+    // Читаем строку с вводом пользователя
+    if (fgets(message, sizeof(message), stdin) == NULL) {
+        printf("Error reading input.\n");
+        closesocket(client_socket);
+        WSACleanup();
+        return 1;
+    }
 
-    send(client_socket, message, strlen(message),0);
+    // Удаляем символ новой строки, если он есть
+    size_t len = strlen(message);
+    if (len > 0 && message[len - 1] == '\n') {
+        message[len - 1] = '\0';
+    }
 
+    send(client_socket, message, sizeof(message), 0);
 
-    char buffer[512];
-    int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-    if (bytes_received > 0) {
+    
+    bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+    if (bytes_received > 0 && bytes_received <= sizeof(buffer)) {
         buffer[bytes_received] = '\0';
         printf("Received from server: %s\n", buffer);
     }

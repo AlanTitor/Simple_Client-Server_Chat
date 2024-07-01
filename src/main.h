@@ -13,5 +13,8 @@ int test_client_socket(SOCKET client_socket);
 int test_connect(SOCKET client_socket, struct sockaddr_in server_info);
 int handle_client(SOCKET client_socket);
 
+int recive_send_message(SOCKET server_socket);
+void *recive_message(void* client_socket);
+
 
 #endif

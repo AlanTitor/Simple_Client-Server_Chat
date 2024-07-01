@@ -1,6 +1,6 @@
 #include"main.h"
 
-int handle_server(){
+int handle_server(){//Инициализируем сервер
     
     UINT PORT = 0; //Порт
     initialize_port(&PORT);//Инициализация порта
@@ -18,29 +18,62 @@ int handle_server(){
     server_info.sin_addr.s_addr = inet_addr("127.0.0.1"); //IP Адресс
 
     test_bind(server_socket, server_info);//Привязываем сокет к адрессу
-    test_listen_port(server_socket, SOMAXCONN);
+    test_listen_port(server_socket, SOMAXCONN);//тест на прослушку
 
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), YELLOW);//Меняем цвет на желтый
     printf("Server is listening on port %d\n", PORT);//Сервер успешно слушает порт
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);//Меняем цвет на белый
 
-    char buffer[512];//буфер сообщений
+    recive_send_message(server_socket);//Обработка сообщений
+
+
+    closesocket(server_socket);
+    WSACleanup();
+    return 0;
+}
+
+int recive_send_message(SOCKET server_socket){//Обрабатываем сообщения
+
+    pthread_t thread_recive, thread_send; //два потока: на отправку сообщений и на получение
 
     while (TRUE)
     {
         struct sockaddr_in client_info = {0};//Определяем пустую структуру для клиента 
         int client_info_size = sizeof(client_info);//Размер для параметра функции accept()
-        SOCKET client_socket = accept(server_socket, (SOCKADDR*)&client_info, &client_info_size);//Устанавливаем соединение с клиентом
-        test_client_socket(client_socket);
+        SOCKET client_socket = accept(server_socket, (SOCKADDR*)&client_info, &client_info_size);//Принимаем соединение от клиента
+        if(test_client_socket(client_socket) != 0) {continue;}
 
-        int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);//получаем сообщения от клиента
-        if (bytes_received > 0) {
-        buffer[bytes_received] = '\0';
-        printf("Received from server: %s\n", buffer);
+
+        SOCKET *client_socket_ptr = malloc(sizeof(SOCKET));
+        if(client_socket_ptr == NULL){
+            printf("Memory alloc error");
+            closesocket(client_socket);
+            continue;
         }
+        *client_socket_ptr = client_socket;
+        if(pthread_create(&thread_recive, NULL, recive_message, client_socket_ptr) != 0){
+            printf("Thread creation faild");
+            closesocket(client_socket);
+            continue;
+        }
+        pthread_detach(thread_recive);
     }
-
     closesocket(server_socket);
     WSACleanup();
     return 0;
+}
+
+void *recive_message(void* client_socket_ptr){
+
+    SOCKET client_socket = *(SOCKET*)client_socket_ptr;
+    free(client_socket_ptr);
+    char buffer[500];//буфер сообщений
+    
+    int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);//получаем сообщения от клиента
+    if (bytes_received > 0) {
+        buffer[bytes_received] = '\0';
+        printf("Received from client: %s\n", buffer);
+    }
+    closesocket(client_socket);
+    return NULL;
 }

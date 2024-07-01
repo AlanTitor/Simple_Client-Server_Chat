@@ -6,6 +6,7 @@
 #include<string.h>
 #include<winsock2.h>
 #include<windows.h>
+#include<pthread.h>
 #pragma comment(lib, "ws2_32.lib");
 
 enum colors{
