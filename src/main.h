@@ -1,6 +1,17 @@
+#ifndef CHAT
+#define CHAT
+
 #include"../include/include.h"
 
-int main(){
-    printf("Hello world");
-    return 1;
-}
+int handle_server();
+void initialize_port(UINT *pPORT);
+int test_WSAStartup(WSADATA wsadata);
+int test_server_socket(SOCKET server_socket);
+int test_bind(SOCKET server_socket, struct sockaddr_in server_info);
+int test_listen_port(SOCKET server_socket, int MAXCONN);
+int test_client_socket(SOCKET client_socket);
+int test_connect(SOCKET client_socket, struct sockaddr_in server_info);
+int handle_client(SOCKET client_socket);
+
+
+#endif
