@@ -1,7 +1,8 @@
 #include"main.h"
+const UINT SIZE = 500;
+
 
 int handle_server(){//Инициализируем сервер
-    
     UINT PORT = 0; //Порт
     initialize_port(&PORT);//Инициализация порта
     
@@ -44,14 +45,14 @@ int recive_send_message(SOCKET server_socket){//Обрабатываем соо�
         if(test_client_socket(client_socket) != 0) {continue;}
 
 
-        SOCKET *client_socket_ptr = malloc(sizeof(SOCKET));
+        SOCKET *client_socket_ptr = malloc(sizeof(SOCKET));//Выделяем память под указатель сокета
         if(client_socket_ptr == NULL){
             printf("Memory alloc error");
             closesocket(client_socket);
             continue;
         }
-        *client_socket_ptr = client_socket;
-        if(pthread_create(&thread_recive, NULL, recive_message, client_socket_ptr) != 0){
+        *client_socket_ptr = client_socket;//Присваеваем сокет клиента указателю
+        if(pthread_create(&thread_recive, NULL, recive_message, client_socket_ptr) != 0){//Передаем указатель на клиента в функцию для паралельного вычисления
             printf("Thread creation faild");
             closesocket(client_socket);
             continue;
@@ -63,11 +64,11 @@ int recive_send_message(SOCKET server_socket){//Обрабатываем соо�
     return 0;
 }
 
-void *recive_message(void* client_socket_ptr){
+void *recive_message(void *client_socket_ptr){
 
-    SOCKET client_socket = *(SOCKET*)client_socket_ptr;
+    SOCKET client_socket = *(SOCKET*)client_socket_ptr;//меняем тип клиенту с поинтера на обычный
     free(client_socket_ptr);
-    char buffer[500];//буфер сообщений
+    char buffer[SIZE];//буфер сообщений
     
     int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);//получаем сообщения от клиента
     if (bytes_received > 0) {

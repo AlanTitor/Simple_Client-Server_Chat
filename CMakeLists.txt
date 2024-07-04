@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.30)
 project(chat)
 set(CMAKE_C_STANDARD 23)
-add_executable(chat src/main.c src/main.h test/test.c test/test.h include/include.h) 
+add_executable(server src/main.c src/main.h src/server.c test/test.c include/include.h)
+add_executable(client src/client.c src/main.h test/test.c include/include.h)
+target_link_libraries(server ws2_32)
+target_link_libraries(client ws2_32)

@@ -77,3 +77,15 @@ int test_client_socket(SOCKET client_socket){
     }
     return 0;
 }
+
+int test_client_connect(SOCKET client_socket, struct sockaddr_in client_info){
+    if(connect(client_socket, (SOCKADDR*)&client_info, sizeof(client_info)) == SOCKET_ERROR){
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
+        printf("Couldn't establish connection!\n");
+        WSAGetLastError();
+        SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
+        closesocket(client_socket);
+        WSACleanup();
+        return 1;
+    }
+}
